@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoLastMile | Gestão de Entregas</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+<style>
+:root{
+  --black:#0b0f0d; --black2:#151a17; --green:#168447; --green2:#25a65d;
+  --yellow:#e7b91f; --yellow2:#f5cf45; --bg:#f4f5f2; --card:#fff;
+  --text:#17211c; --muted:#68736d; --line:#dfe4df; --soft:#eef5ef;
+}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select{font:inherit}
+.top{height:76px;background:var(--black);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 34px;position:sticky;top:0;z-index:20;box-shadow:0 3px 15px #0002}
+.brand{display:flex;align-items:center;gap:13px}.mark{width:43px;height:43px;background:var(--yellow);clip-path:polygon(0 50%,24% 0,100% 0,76% 50%,100% 100%,24% 100%);display:grid;place-items:center;color:var(--black);font-weight:950;font-size:23px}
+.brand strong{font-size:20px}.brand small{display:block;color:#aeb8b2;margin-top:2px}
+.topStatus{font-size:13px;color:#dce7df}.dot{display:inline-block;width:8px;height:8px;background:#42c873;border-radius:50%;margin-right:7px}
+.wrap{max-width:1400px;margin:auto;padding:30px 34px 50px}
+.hero{display:flex;justify-content:space-between;gap:25px;align-items:end;margin-bottom:26px}
+.hero h1{margin:0;font-size:34px;color:var(--black)}.hero p{margin:8px 0 0;color:var(--muted)}
+.heroBadge{background:var(--yellow);color:var(--black);padding:10px 14px;border-radius:9px;font-weight:900;font-size:13px}
+.layout{display:grid;grid-template-columns:470px 1fr;gap:24px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:24px;box-shadow:0 7px 25px #0b0f0d0a}
+.cardHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}.card h2{font-size:19px;margin:0;color:var(--black)}
+.tag{font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:900;background:var(--soft);color:var(--green);padding:7px 9px;border-radius:20px}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:15px}.full{grid-column:1/-1}
+label{font-size:11px;text-transform:uppercase;letter-spacing:.7px;font-weight:900;color:#66736b;display:block;margin-bottom:7px}
+input,select{height:48px;width:100%;border:1px solid var(--line);border-radius:9px;background:#fafbf9;padding:0 12px;color:var(--text);outline:none}
+input:focus,select:focus{border-color:var(--green);box-shadow:0 0 0 3px #16844718}
+.help{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.35}
+.add{height:48px;width:100%;border:0;border-radius:9px;margin-top:17px;background:var(--green);color:#fff;font-weight:900;cursor:pointer}.add:hover{background:var(--green2)}
+.list{margin-top:19px;border-top:1px solid var(--line)}
+.item{display:grid;grid-template-columns:1fr 66px 32px;gap:10px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.item strong{font-size:14px}.item small{display:block;color:var(--muted);margin-top:4px;line-height:1.35}.km{font-size:12px;font-weight:900;color:var(--green)}
+.remove{width:32px;height:32px;border:0;border-radius:8px;background:#f0f2f0;color:#68736d;cursor:pointer;font-size:18px}
+.mapCard{padding:0;overflow:hidden}.mapHead{padding:22px 24px 16px;display:flex;justify-content:space-between;align-items:center}
+.map{height:500px;width:100%;border:0;display:block;background:#dce5e0}
+.mapFooter{padding:15px 24px;display:flex;justify-content:space-between;align-items:center;gap:15px;border-top:1px solid var(--line)}
+.mapFooter span{font-size:12px;color:var(--muted)}.mapsLink{background:var(--black);color:#fff;padding:10px 13px;border-radius:8px;text-decoration:none;font-size:12px;font-weight:800}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:24px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:18px}.stat small{color:var(--muted);font-weight:800;font-size:11px}.stat strong{display:block;font-size:28px;color:var(--black);margin:10px 0 4px}.stat em{font-style:normal;color:var(--green);font-size:11px;font-weight:800}
+.bottom{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px}
+.progress{height:11px;background:#e5e9e5;border-radius:20px;overflow:hidden;margin:20px 0 8px}.progress i{display:block;height:100%;width:52%;background:var(--green)}
+.compare{display:flex;gap:12px}.compareBox{flex:1;background:#f5f6f4;border-radius:10px;padding:17px}.compareBox.after{background:#edf7ef}.compareBox small{color:var(--muted)}.compareBox b{display:block;font-size:24px;margin-top:7px}.after b{color:var(--green)}
+.info{font-size:13px;line-height:1.6;color:#5c6961;margin:0}
+footer{margin-top:32px;background:var(--black);color:#fff;border-radius:13px;padding:23px 25px;display:flex;justify-content:space-between;align-items:center}
+footer p{margin:5px 0 0;color:#aeb9b1;font-size:12px}.topBtn{border:1px solid #ffffff35;background:transparent;color:#fff;border-radius:8px;padding:9px 13px;cursor:pointer}
+.toast{position:fixed;right:22px;bottom:22px;background:var(--black);color:#fff;padding:13px 17px;border-radius:9px;opacity:0;transform:translateY(10px);transition:.2s;z-index:50}.toast.show{opacity:1;transform:none}
+.loading{font-size:11px;color:var(--green);margin-top:6px;display:none}
+@media(max-width:1050px){.layout{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.bottom{grid-template-columns:1fr}}
+@media(max-width:700px){.wrap{padding:22px 15px}.top{padding:0 17px}.topStatus{display:none}.hero{align-items:start;flex-direction:column}.form{grid-template-columns:1fr}.full{grid-column:auto}.stats{grid-template-columns:1fr 1fr}.map{height:380px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><div class="mark">C</div><div><strong>EcoLastMile</strong><small>Gestão inteligente de entregas</small></div></div>
+  <div class="topStatus"><span class="dot"></span>Sistema operacional</div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <div><h1>Planejamento de entregas</h1><p>Cadastre destinos em qualquer estado e município do Brasil e visualize a localização no mapa.</p></div>
+    <div class="heroBadge">BRASIL • 27 UFs</div>
+  </div>
+
+  <div class="layout">
+    <section class="card">
+      <div class="cardHead"><h2>Cadastro do destino</h2><span class="tag">Nova entrega</span></div>
+      <div class="form">
+        <div class="full"><label>Destinatário / referência</label><input id="recipient" placeholder="Ex.: Emanuel Souza"></div>
+        <div><div><label>Estado</label><select id="state"></select></div></div>
+        <div><div><label>Cidade / município</label><select id="city"><option>Selecione o estado primeiro</option></select><div id="cityLoading" class="loading">Carregando municípios…</div></div></div>
+        <div>
+          <label>Bairro / localidade</label>
+          <select id="neighborhood"><option>Selecione a cidade primeiro</option></select>
+          <div class="help">A lista é consultada dinamicamente para a cidade escolhida.</div>
+          <div id="bairroLoading" class="loading">Bairros disponíveis</div>
+        </div>
+        <div><label>Veículo</label><select id="vehicle"><option>Moto</option><option>Carro</option><option>Van</option><option>Veículo elétrico</option></select></div>
+      </div>
+      <button class="add" onclick="addDelivery()">+ Adicionar entrega</button>
+      <div class="list" id="list"></div>
+    </section>
+
+    <section class="card mapCard">
+      <div class="mapHead"><h2>Visualização da operação</h2><span class="tag">Mapa real</span></div>
+      <div id="map" class="map" aria-label="Mapa real da operação"></div>
+      <div class="mapFooter">
+        <div><span id="mapText">Selecione um destino para atualizar o mapa.</span><span id="postOfficeInfo" style="display:block;margin-top:5px;color:var(--green);font-weight:800">Correios mais próximo: —</span></div>
+        <a id="mapsLink" class="mapsLink" href="https://www.google.com/maps" target="_blank" rel="noopener">Abrir no Google Maps ↗</a>
+      </div>
+    </section>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><small>ENTREGAS CADASTRADAS</small><strong id="count">0</strong><em>destinos na operação</em></div>
+    <div class="stat"><small>DISTÂNCIA ESTIMADA</small><strong id="distance">0 km</strong><em>após otimização</em></div>
+    <div class="stat"><small>CO₂ EVITADO</small><strong id="co2">0 kg</strong><em>estimativa demonstrativa</em></div>
+    <div class="stat"><small>TEMPO ESTIMADO</small><strong id="time">0h 00</strong><em>tempo de operação</em></div>
+  </div>
+
+  <div class="bottom">
+    <section class="card">
+      <div class="cardHead"><h2>Eficiência da simulação</h2><span class="tag">Estimativa</span></div>
+      <div class="compare"><div class="compareBox"><small>Antes</small><b id="before">0,0 kg CO₂</b></div><div class="compareBox after"><small>Depois</small><b id="after">0,0 kg CO₂</b></div></div>
+      <div class="progress"><i id="bar"></i></div>
+      <div style="font-size:12px;color:var(--muted)">Redução estimada: <b id="reduction">0%</b></div>
+    </section>
+    <section class="card">
+      <div class="cardHead"><h2>Sobre a interface</h2><span class="tag">EcoLastMile</span></div>
+      <p class="info">A interface reúne cadastro de destinos, localização no mapa, indicadores operacionais e uma estimativa ambiental em um único painel. Os valores de distância, tempo e CO₂ são ilustrativos para o protótipo.</p>
+    </section>
+  </div>
+
+  <footer><div><b>EcoLastMile</b><p>Logística eficiente com menor impacto.</p></div><button class="topBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">Voltar ao topo ↑</button></footer>
+</main>
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+const states=[
+["AC","Acre"],["AL","Alagoas"],["AP","Amapá"],["AM","Amazonas"],["BA","Bahia"],["CE","Ceará"],["DF","Distrito Federal"],["ES","Espírito Santo"],["GO","Goiás"],["MA","Maranhão"],["MT","Mato Grosso"],["MS","Mato Grosso do Sul"],["MG","Minas Gerais"],["PA","Pará"],["PB","Paraíba"],["PR","Paraná"],["PE","Pernambuco"],["PI","Piauí"],["RJ","Rio de Janeiro"],["RN","Rio Grande do Norte"],["RS","Rio Grande do Sul"],["RO","Rondônia"],["RR","Roraima"],["SC","Santa Catarina"],["SP","São Paulo"],["SE","Sergipe"],["TO","Tocantins"]
+];
+const fallbackNeighborhoods={
+"São Gonçalo":["Alcântara","Centro","Neves","Trindade","Mutuá","Colubandê","Porto da Pedra","Gradim","Zé Garoto","Boaçu"],
+"Niterói":["Centro","Icaraí","Ingá","Santa Rosa","São Francisco","Charitas","Piratininga","Itaipu"],
+"Rio de Janeiro":["Centro","Copacabana","Ipanema","Botafogo","Tijuca","Méier","Barra da Tijuca","Jacarepaguá"],
+"São Paulo":["Sé","Pinheiros","Moema","Vila Mariana","Tatuapé","Santana","Lapa"],
+"Belo Horizonte":["Centro","Savassi","Pampulha","Funcionários","Buritis","Lourdes"],
+"Brasília":["Asa Norte","Asa Sul","Lago Norte","Lago Sul","Águas Claras","Taguatinga"],
+"Salvador":["Centro","Barra","Ondina","Pituba","Itapuã","Rio Vermelho"],
+"Curitiba":["Centro","Batel","Água Verde","Mercês","Cabral","Boa Vista"]
+};
+let items=[];
+const state=document.getElementById('state'),city=document.getElementById('city'),bairro=document.getElementById('neighborhood');
+
+states.forEach(([uf,name])=>state.add(new Option(name,uf)));
+state.value="RJ";
+
+async function loadCities(){
+ city.innerHTML='<option>Carregando municípios…</option>'; city.disabled=true;
+ document.getElementById('cityLoading').style.display='block';
+ try{
+  const uf=state.value;
+  const r=await fetch(`https://brasilapi.com.br/api/ibge/municipios/v1/${uf}`);
+  const data=await r.json();
+  city.innerHTML='';
+  data.sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).forEach(x=>city.add(new Option(x.nome,x.nome)));
+  city.disabled=false;
+  if([...city.options].some(o=>o.value==="São Gonçalo")) city.value="São Gonçalo";
+  loadNeighborhoods();
+ }catch(e){
+  city.innerHTML='<option>Não foi possível carregar</option>'; showToast('Não foi possível carregar os municípios agora.');
+ }finally{document.getElementById('cityLoading').style.display='none'}
+}
+async function loadNeighborhoods(){
+ const c=city.value,s=state.options[state.selectedIndex]?.text||'';
+ // Mostra opções imediatamente, sem bloquear a interface aguardando uma API externa.
+ const instant=[...(fallbackNeighborhoods[c]||['Centro'])];
+ bairro.innerHTML='';
+ instant.sort((a,b)=>a.localeCompare(b,'pt-BR')).forEach(n=>bairro.add(new Option(n,n)));
+ bairro.disabled=false;
+ document.getElementById('bairroLoading').style.display='none';
+ updateMap();
+
+ // Complementa silenciosamente com bairros reais do mapa, sem colocar a interface em espera.
+ try{
+  const geoUrl=`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&city=${encodeURIComponent(c)}&state=${encodeURIComponent(s)}&country=Brazil&addressdetails=1`;
+  const gr=await fetch(geoUrl,{headers:{'Accept-Language':'pt-BR'}});
+  const gd=await gr.json();
+  let names=[];
+  if(gd.length){
+   const bb=gd[0].boundingbox.map(Number);
+   const [south,north,west,east]=[bb[0],bb[1],bb[2],bb[3]];
+   const query=`[out:json][timeout:25];(nwr["place"~"^(neighbourhood|suburb|quarter)$"](${south},${west},${north},${east}););out center tags;`;
+   const or=await fetch('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(query));
+   if(or.ok){
+    const od=await or.json();
+    od.elements.forEach(el=>{const n=el.tags?.name;if(n&&!names.includes(n))names.push(n)});
+   }
+  }
+  if(names.length){
+   names=[...new Set([...names,...instant])].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+   const selected=bairro.value;
+   bairro.innerHTML='';
+   names.forEach(n=>bairro.add(new Option(n,n)));
+   if([...bairro.options].some(o=>o.value===selected)) bairro.value=selected;
+  }
+ }catch(e){ console.warn('Atualização de bairros em segundo plano indisponível:',e); }
+}
+state.addEventListener('change',loadCities);city.addEventListener('change',loadNeighborhoods);bairro.addEventListener('change',updateMap);
+
+const map=L.map('map',{zoomControl:true,scrollWheelZoom:true}).setView([-22.8268,-43.0538],11);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+let currentMarker=null;
+let postOfficeMarker=null;
+let routeLayer=null;
+let routeStartMarker=null;
+let routeEndMarker=null;
+let mapRequestId=0;
+
+function escapeHtml(value){
+ return String(value||'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[ch]));
+}
+function haversineKm(lat1,lon1,lat2,lon2){
+ const R=6371,rad=Math.PI/180;
+ const dLat=(lat2-lat1)*rad,dLon=(lon2-lon1)*rad;
+ const a=Math.sin(dLat/2)**2+Math.cos(lat1*rad)*Math.cos(lat2*rad)*Math.sin(dLon/2)**2;
+ return 2*R*Math.asin(Math.sqrt(a));
+}
+function clearRoute(){
+ if(postOfficeMarker){map.removeLayer(postOfficeMarker);postOfficeMarker=null;}
+ if(routeLayer){map.removeLayer(routeLayer);routeLayer=null;}
+ if(routeStartMarker){map.removeLayer(routeStartMarker);routeStartMarker=null;}
+ if(routeEndMarker){map.removeLayer(routeEndMarker);routeEndMarker=null;}
+}
+
+async function findNearestPostOffice(lat,lon,requestId){
+ const info=document.getElementById('postOfficeInfo');
+ info.textContent='Buscando o Correios mais próximo e calculando o percurso…';
+ // Localiza agências reais do OSM próximas ao destino.
+ const query=`[out:json][timeout:20];nwr["amenity"="post_office"](around:12000,${lat},${lon});out center tags;`;
+ const url='https://overpass-api.de/api/interpreter?data='+encodeURIComponent(query);
+ const response=await fetch(url);
+ if(!response.ok) throw new Error('Overpass indisponível');
+ const data=await response.json();
+ if(requestId!==mapRequestId) return;
+ const candidates=data.elements.map(el=>{
+   const p=el.type==='node'?{lat:+el.lat,lon:+el.lon}:{lat:+el.center.lat,lon:+el.center.lon};
+   return {...p,tags:el.tags||{},straight:haversineKm(lat,lon,p.lat,p.lon)};
+ }).filter(x=>Number.isFinite(x.lat)&&Number.isFinite(x.lon)).sort((a,b)=>a.straight-b.straight).slice(0,5);
+ if(!candidates.length){
+   info.textContent='Correios mais próximo: não encontrado em até 12 km';
+   return;
+ }
+ // A proximidade é confirmada pela distância de carro, não apenas pela linha reta.
+ let best=null;
+ for(const office of candidates){
+   try{
+    const routeUrl=`https://router.project-osrm.org/route/v1/driving/${office.lon},${office.lat};${lon},${lat}?overview=full&geometries=geojson`;
+    const rr=await fetch(routeUrl);
+    const rd=await rr.json();
+    if(rd.routes?.length){
+      const route=rd.routes[0];
+      if(!best || route.distance<best.route.distance) best={office,route};
+    }
+   }catch(e){}
+   if(requestId!==mapRequestId) return;
+ }
+ if(!best){ info.textContent='Não foi possível calcular o percurso até os Correios.'; return; }
+ const office=best.office, route=best.route;
+ const name=office.tags.name||'Agência dos Correios';
+ const km=route.distance/1000;
+ // Marca claramente o início do percurso (Correios) e o fim (destino).
+ postOfficeMarker=L.marker([office.lat,office.lon]).addTo(map).bindPopup(`<strong>INÍCIO DO PERCURSO</strong><br>${escapeHtml(name)}<br>Correios mais próximo<br><b>${km.toFixed(1).replace('.',',')} km por estrada</b>`);
+ routeStartMarker=L.circleMarker([office.lat,office.lon],{radius:9,weight:3,fillOpacity:.95}).addTo(map).bindTooltip('INÍCIO — Correios',{permanent:true,direction:'top',offset:[0,-8]});
+ routeEndMarker=L.circleMarker([lat,lon],{radius:9,weight:3,fillOpacity:.95}).addTo(map).bindTooltip('DESTINO',{permanent:true,direction:'bottom',offset:[0,8]});
+ routeLayer=L.geoJSON(route.geometry,{style:{color:'#e7b91f',weight:10,opacity:.30},interactive:false}).addTo(map);
+ const routeCore=L.geoJSON(route.geometry,{style:{color:'#168447',weight:6,opacity:1},interactive:false}).addTo(map);
+ routeLayer.addLayer(routeCore);
+ info.innerHTML=`<span style="display:inline-block;width:12px;height:12px;background:#168447;border-radius:50%;margin-right:6px"></span><b>Percurso traçado: Correios → destino</b> • <b>${km.toFixed(1).replace('.',',')} km</b> por estrada`;
+ document.getElementById('mapText').textContent=`Rota real: ${name} → destino selecionado`;
+ const group=L.featureGroup([currentMarker,postOfficeMarker,routeLayer,routeStartMarker,routeEndMarker]);
+ map.fitBounds(group.getBounds().pad(.18),{maxZoom:16});
+}
+async function updateMap(){
+ const requestId=++mapRequestId;
+ const c=city.value||'',b=bairro.value||'',s=state.options[state.selectedIndex]?.text||'';
+ const info=document.getElementById('postOfficeInfo');
+ clearRoute();
+ if(!c || c==='Selecione o estado primeiro'){ map.setView([-14.2350,-51.9253],4); info.textContent='Correios mais próximo: —'; return; }
+ const query=[b,c,s,'Brasil'].filter(Boolean).join(', ');
+ const q=encodeURIComponent(query);
+ document.getElementById('mapsLink').href=`https://www.google.com/maps/search/?api=1&query=${q}`;
+ document.getElementById('mapText').textContent=`Localizando: ${query}`;
+ info.textContent='Buscando o Correios mais próximo…';
+ try{
+   const r=await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${q}`,{headers:{'Accept-Language':'pt-BR'}});
+   const data=await r.json();
+   if(requestId!==mapRequestId) return;
+   if(!data.length){document.getElementById('mapText').textContent='Local não encontrado no mapa.';info.textContent='Correios mais próximo: —';return;}
+   const lat=+data[0].lat,lon=+data[0].lon;
+   map.setView([lat,lon],b?15:12);
+   if(currentMarker) map.removeLayer(currentMarker);
+   currentMarker=L.marker([lat,lon]).addTo(map).bindPopup(`<strong>Destino EcoLastMile</strong><br>${escapeHtml(query)}`).openPopup();
+   document.getElementById('mapText').textContent=`Destino: ${[b,c,s].filter(Boolean).join(' — ')}`;
+   await findNearestPostOffice(lat,lon,requestId);
+ }catch(e){
+   if(requestId!==mapRequestId) return;
+   document.getElementById('mapText').textContent='Não foi possível carregar a localização agora.';
+   info.textContent='Correios mais próximo: indisponível no momento';
+ }
+}
+function addDelivery(){
+ const name=document.getElementById('recipient').value.trim()||'Destinatário';
+ items.push({name,state:state.options[state.selectedIndex].text,city:city.value,bairro:bairro.value,vehicle:document.getElementById('vehicle').value});
+ render();document.getElementById('recipient').value='';toast('Entrega adicionada.');
+}
+function removeDelivery(i){items.splice(i,1);render();toast('Entrega removida.')}
+function render(){
+ document.getElementById('list').innerHTML=items.map((x,i)=>`<div class="item"><div><strong>${x.name}</strong><small>${x.bairro}, ${x.city} — ${x.state}<br>${x.vehicle}</small></div><div class="km">${6+i*4} km</div><button class="remove" onclick="removeDelivery(${i})">×</button></div>`).join('');
+ const n=items.length,dist=Math.round(n*6*.72),before=n*1.1,after=before*.48,mins=n*18;
+ document.getElementById('count').textContent=n;document.getElementById('distance').textContent=dist+' km';
+ document.getElementById('co2').textContent=(before-after).toFixed(1).replace('.',',')+' kg';
+ document.getElementById('time').textContent=Math.floor(mins/60)+'h '+String(mins%60).padStart(2,'0');
+ document.getElementById('before').textContent=before.toFixed(1).replace('.',',')+' kg CO₂';
+ document.getElementById('after').textContent=after.toFixed(1).replace('.',',')+' kg CO₂';
+ document.getElementById('reduction').textContent=n?'52%':'0%';document.getElementById('bar').style.width=n?'52%':'0%';
+}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)}
+loadCities();render();
+</script>
+</body>
+</html>
